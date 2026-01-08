@@ -1,0 +1,14 @@
+package model;
+
+public class Laptop extends Device {
+    private int ramSizeGb;
+
+    public Laptop(String deviceId, String brand, String model, String operatingSystem, int ramSizeGb) {
+        super(deviceId, brand, model, operatingSystem);
+        this.ramSizeGb = ramSizeGb;
+    }
+
+    public int getRamSizeGb() {
+        return ramSizeGb;
+    }
+}
