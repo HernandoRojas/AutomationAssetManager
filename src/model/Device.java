@@ -7,7 +7,10 @@ public abstract class Device {
     private final String operatingSystem;
     private DeviceStatus status;
 
-    protected Device(String deviceId, String brand,String model, String operatingSystem) {
+    protected Device(String deviceId, String brand, String model, String operatingSystem) {
+        if (deviceId == null || deviceId.isBlank()) {
+        throw new IllegalArgumentException("Device ID is mandatory and cannot be empty.");
+        }
         this.deviceId = deviceId;
         this.brand = brand;
         this.model = model;

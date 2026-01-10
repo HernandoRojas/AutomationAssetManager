@@ -17,9 +17,10 @@ public class App {
         // Note: We use the specific subclasses
         MobilePhone phone1 = new MobilePhone("M001", "Samsung", "S24 Ultra", "Android 14", "+57300123");
         Laptop laptop1 = new Laptop("L001", "Apple", "MacBook Pro", "macOS Sonoma", 16);
-
+        MobilePhone phone2 = new MobilePhone("M002", "Apple", "iPhone 15 Pro", "iOS 17", "+57300456");
         assetService.registerNewDevice(phone1);
         assetService.registerNewDevice(laptop1);
+        assetService.registerNewDevice(phone2);
 
         // 3. EXECUTION: Testing our Business Logic
         System.out.println("\nInventory before rental:");
