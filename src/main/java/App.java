@@ -51,7 +51,7 @@ public class App {
         } catch ( RuntimeException e) {
             System.err.println("ALERT: " + e.getMessage());
         }
-        
+
         // 5. VERIFY MAINTENANCE LOGIC
         System.out.println("\nFinal State of all assets (including rented):");
         // To see everything, we'd go to the repository or add a method to Service

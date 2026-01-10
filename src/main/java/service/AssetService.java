@@ -1,11 +1,11 @@
 package service;
 
-import model.Device;
-import model.DeviceStatus;
-import repository.DeviceRepository;
 import java.util.List;
 
 import exception.DeviceNotFoundException;
+import model.Device;
+import model.DeviceStatus;
+import repository.DeviceRepository;
 
 public class AssetService {
     // We depend on the Interface, not the implementation!

@@ -1,0 +1,27 @@
+plugins {
+    id 'java' // Tells Gradle this is a Java project
+}
+
+group = 'com.automation.assets'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral() // Where Gradle downloads the libraries from
+}
+
+dependencies {
+    // JUnit 5 (Jupiter) API and Engine
+    // 1. API: Required to write tests (@Test, Assertions)
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+
+    // 2. Engine: Required by Gradle to RUN the tests (Solves your error)
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform() // Required to run JUnit 5 tests
+    testLogging {
+        events "passed", "skipped", "failed" // Shows test results in the console
+    }
+}
