@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="service.AssetServiceTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-01-10T12:59:06.254Z" hostname="NANDO" time="0.026">
+  <properties/>
+  <testcase name="Should throw InvalidDeviceStateException when device is already IN_USE" classname="service.AssetServiceTest" time="0.021"/>
+  <testcase name="Should throw DeviceNotFoundException when ID does not exist" classname="service.AssetServiceTest" time="0.004"/>
+  <system-out><![CDATA[Device rented successfully: M1
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

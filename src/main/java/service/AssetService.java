@@ -1,9 +1,11 @@
 package service;
 
+import java.util.List;
+
+import exception.DeviceNotFoundException;
 import model.Device;
 import model.DeviceStatus;
 import repository.DeviceRepository;
-import java.util.List;
 
 public class AssetService {
     // We depend on the Interface, not the implementation!
@@ -25,7 +27,7 @@ public class AssetService {
     public void rentDevice(String deviceId) {
         // 1. Find the device
         Device device = repository.findById(deviceId)
-                .orElseThrow(() -> new RuntimeException("Device not found with ID: " + deviceId));
+                .orElseThrow(() -> new DeviceNotFoundException(deviceId));
 
         // 2. Business Logic: The "rent" method inside Device handles the status check
         // This is "Tell, Don't Ask" principle.

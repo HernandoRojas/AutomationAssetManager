@@ -1,5 +1,7 @@
 package model;
 
+import exception.InvalidDeviceStateException;
+
 public abstract class Device {
     private final String deviceId; // Can be UUID or any unique identifier
     private final String brand;
@@ -43,7 +45,7 @@ public abstract class Device {
 
     public void rent() {
         if (this.status != DeviceStatus.AVAILABLE) {
-            throw new IllegalStateException("Device is not available for rental. Current status: " + status);
+            throw new InvalidDeviceStateException(this.deviceId, "rent", this.status.name());
         } else {
             this.status = DeviceStatus.IN_USE;
         }

@@ -42,6 +42,16 @@ public class App {
             System.err.println("ALERT: " + e.getMessage());
         }
 
+
+        try {
+            // TRYING TO RENT A NON-EXISTENT DEVICE
+            System.out.println("\nAttempting to rent non-existent device: X999...");
+            assetService.rentDevice("X999");
+
+        } catch ( RuntimeException e) {
+            System.err.println("ALERT: " + e.getMessage());
+        }
+
         // 5. VERIFY MAINTENANCE LOGIC
         System.out.println("\nFinal State of all assets (including rented):");
         // To see everything, we'd go to the repository or add a method to Service

@@ -1,8 +1,9 @@
 package repository;
 
-import model.Device;
 import java.util.List;
 import java.util.Optional;
+
+import model.Device;
 
 public interface DeviceRepository {
     void save(Device device);
