@@ -53,7 +53,7 @@ public abstract class Device {
 
     public void returnToInventory() {
         if (this.status != DeviceStatus.IN_USE) {
-            throw new IllegalStateException("Device is not currently rented out. Current status: " + status);
+            throw new InvalidDeviceStateException(this.deviceId, "return", this.status.name());
         } else {
             this.status = DeviceStatus.AVAILABLE;
         }

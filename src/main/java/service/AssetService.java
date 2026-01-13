@@ -43,4 +43,14 @@ public class AssetService {
                 .filter(d -> d.getStatus() == DeviceStatus.AVAILABLE)
                 .toList();
     }
+
+    public void returnDevice(String deviceId) {
+        Device device = repository.findById(deviceId)
+                .orElseThrow(() -> new DeviceNotFoundException(deviceId));
+
+        device.returnToInventory();
+
+        repository.save(device);
+        System.out.println("Device returned successfully: " + deviceId);
+    }
 }

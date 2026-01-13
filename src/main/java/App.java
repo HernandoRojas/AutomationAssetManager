@@ -35,8 +35,14 @@ public class App {
             assetService.getAllAvailableDevices().forEach(System.out::println);
 
             // 4. TEST ERROR HANDLING: Attempting to rent the same device again
-            System.out.println("\nAttempting to rent M001 again (this should fail)...");
-            assetService.rentDevice("M001");
+            //System.out.println("\nAttempting to rent M001 again (this should fail)...");
+            //assetService.rentDevice("M001");
+
+            System.out.println("\nAttempting to return device: M001...");
+            assetService.returnDevice("M001");  
+
+            System.out.println("\nInventory after return:");
+            assetService.getAllAvailableDevices().forEach(System.out::println);
 
         } catch ( RuntimeException e) {
             System.err.println("ALERT: " + e.getMessage());
