@@ -3,5 +3,5 @@ package model;
 public enum DeviceStatus {
     AVAILABLE,
     IN_USE,
-    MAINTENANCE
+    UNDER_REPAIR
 }

@@ -53,4 +53,24 @@ public class AssetService {
         repository.save(device);
         System.out.println("Device returned successfully: " + deviceId);
     }
+
+    public void moveDeviceToMaintenance(String deviceId, String reason) {
+        Device device = repository.findById(deviceId)
+                .orElseThrow(() -> new DeviceNotFoundException(deviceId));
+
+        device.sendToMaintenance(reason);
+
+        repository.save(device);
+        System.out.println("Device moved to maintenance: " + deviceId + " Reason: " + reason);
+    }
+
+    public void completeDeviceRepair(String deviceId) {
+        Device device = repository.findById(deviceId)
+                .orElseThrow(() -> new DeviceNotFoundException(deviceId));
+
+        device.repairCompleted();
+
+        repository.save(device);
+        System.out.println("Device repair completed: " + deviceId);
+    }
 }

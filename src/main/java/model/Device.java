@@ -8,6 +8,7 @@ public abstract class Device {
     private final String model;
     private final String operatingSystem;
     private DeviceStatus status;
+    private String maintenanceReason;
 
     protected Device(String deviceId, String brand, String model, String operatingSystem) {
         if (deviceId == null || deviceId.isBlank()) {
@@ -57,6 +58,22 @@ public abstract class Device {
         } else {
             this.status = DeviceStatus.AVAILABLE;
         }
+    }
+
+    public void sendToMaintenance(String reason) {
+        if (this.status == DeviceStatus.UNDER_REPAIR) {
+            throw new InvalidDeviceStateException(this.deviceId, "send to maintenance", this.status.name());
+        } 
+        this.status = DeviceStatus.UNDER_REPAIR;
+        this.maintenanceReason = reason;
+    }
+
+    public void repairCompleted() {
+        if (this.status != DeviceStatus.UNDER_REPAIR) {
+            throw new InvalidDeviceStateException(this.deviceId, "complete repair", this.status.name());
+        }
+        this.status = DeviceStatus.AVAILABLE;
+        this.maintenanceReason = null;
     }
 
     @Override
