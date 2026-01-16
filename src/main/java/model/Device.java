@@ -52,6 +52,10 @@ public abstract class Device {
         }
     }
 
+    public String getMaintenanceReason() {
+        return maintenanceReason;
+    }
+
     public void returnToInventory() {
         if (this.status != DeviceStatus.IN_USE) {
             throw new InvalidDeviceStateException(this.deviceId, "return", this.status.name());
