@@ -48,12 +48,27 @@ public class App {
             System.err.println("ALERT: " + e.getMessage());
         }
 
+        try {
+            System.out.println("\nSending device L001 to maintenance...");
+            assetService.moveDeviceToMaintenance("L001", "Screen issue");
+
+            System.out.println("\nInventory after sending L001 to maintenance:");
+            assetService.getAllAvailableDevices().forEach(System.out::println);
+
+            System.out.println("\nCompleting repair for device L001...");
+            assetService.completeDeviceRepair("L001");
+
+            System.out.println("\nInventory after completing repair for L001:");
+            assetService.getAllAvailableDevices().forEach(System.out::println);
+
+        } catch ( RuntimeException e) {
+            System.err.println("ALERT: " + e.getMessage());
+        }
 
         try {
             // TRYING TO RENT A NON-EXISTENT DEVICE
             System.out.println("\nAttempting to rent non-existent device: X999...");
             assetService.rentDevice("X999");
-
         } catch ( RuntimeException e) {
             System.err.println("ALERT: " + e.getMessage());
         }
