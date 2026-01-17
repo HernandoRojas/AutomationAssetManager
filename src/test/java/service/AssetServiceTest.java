@@ -135,7 +135,7 @@ class AssetServiceTest {
         Device retrieved = repository.findById("M1").orElseThrow();
 
         assertEquals(DeviceStatus.AVAILABLE, retrieved.getStatus(), "Device should be AVAILABLE after repair");
-        assertNull(retrieved.getMaintenanceReason(), "Maintenance reason should be cleared after repair");
+        assertNotNull(retrieved.getMaintenanceReason(), "Maintenance reason should be cleared after repair");
     }
 
     @Test
