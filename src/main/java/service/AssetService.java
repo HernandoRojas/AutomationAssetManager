@@ -1,6 +1,7 @@
 package service;
 
 import java.util.List;
+import java.util.Optional;
 
 import exception.DeviceNotFoundException;
 import model.Device;
@@ -16,9 +17,13 @@ public class AssetService {
         this.repository = repository;
     }
 
+    private Optional<Device> findDeviceById(String deviceId) {
+        return repository.findById(deviceId);
+    }
+
     public void registerNewDevice(Device device) {
         // Business Rule: IDs must be unique (simplified check)
-        if (repository.findById(device.getDeviceId()).isPresent()) {
+        if (findDeviceById(device.getDeviceId()).isPresent()) {
             throw new IllegalArgumentException("Device ID already exists: " + device.getDeviceId());
         }
         repository.save(device);
@@ -26,7 +31,7 @@ public class AssetService {
 
     public void rentDevice(String deviceId) {
         // 1. Find the device
-        Device device = repository.findById(deviceId)
+        Device device = findDeviceById(deviceId)
                 .orElseThrow(() -> new DeviceNotFoundException(deviceId));
 
         // 2. Business Logic: The "rent" method inside Device handles the status check
@@ -44,8 +49,20 @@ public class AssetService {
                 .toList();
     }
 
+    public List<Device> getAllOnMaintenanceDevices() {
+        return repository.findAll().stream()
+                .filter(d -> d.getStatus() == DeviceStatus.UNDER_REPAIR)
+                .toList();
+    }
+
+    public List<Device> getAllRentedDevices() {
+        return repository.findAll().stream()
+                .filter(d -> d.getStatus() == DeviceStatus.IN_USE)
+                .toList();
+    }
+
     public void returnDevice(String deviceId) {
-        Device device = repository.findById(deviceId)
+        Device device = findDeviceById(deviceId)
                 .orElseThrow(() -> new DeviceNotFoundException(deviceId));
 
         device.returnToInventory();
@@ -55,7 +72,7 @@ public class AssetService {
     }
 
     public void moveDeviceToMaintenance(String deviceId, String reason) {
-        Device device = repository.findById(deviceId)
+        Device device = findDeviceById(deviceId)
                 .orElseThrow(() -> new DeviceNotFoundException(deviceId));
 
         device.sendToMaintenance(reason);
@@ -65,7 +82,7 @@ public class AssetService {
     }
 
     public void completeDeviceRepair(String deviceId) {
-        Device device = repository.findById(deviceId)
+        Device device = findDeviceById(deviceId)
                 .orElseThrow(() -> new DeviceNotFoundException(deviceId));
 
         device.repairCompleted();

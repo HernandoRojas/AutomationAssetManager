@@ -348,21 +348,28 @@ class AssetServiceTest {
     @DisplayName("Should show the reason for maintenance when listing devices")
     void testShowMaintenanceReason() {
         // 1. ARRANGE
-        String deviceId = "M1";
-        MobilePhone phone = new MobilePhone(deviceId, "Apple", "iPhone 15", "iOS", "+123");
+        String deviceId1 = "M1";
+        String deviceId2 = "M2";
+        MobilePhone phone1 = new MobilePhone(deviceId1, "Apple", "iPhone 15", "iOS", "+123");
+        MobilePhone phone2 = new MobilePhone(deviceId2, "Samsung", "Galaxy S20", "Android", "+456");
 
-        when(repository.findById(deviceId)).thenReturn(Optional.of(phone));
+        when(repository.findAll()).thenReturn(List.of(phone1,phone2));
 
         // 2. ACT - Move device to maintenance
-        assetService.moveDeviceToMaintenance(deviceId, "Screen issue"); 
+        phone1.sendToMaintenance("Screen issue");
+        List<Device> maintenanceDevices = assetService.getAllOnMaintenanceDevices();
+
 
         // 3. ASSERT
-        Device retrieved = repository.findById(deviceId).orElseThrow();
-        assertEquals("Screen issue", retrieved.getMaintenanceReason(), "Maintenance reason should match");
+        assertEquals(1, maintenanceDevices.size(), "Only one device should be under maintenance");
+        assertEquals(deviceId1, maintenanceDevices.get(0).getDeviceId());
+        assertEquals("Screen issue", maintenanceDevices.get(0).getMaintenanceReason(), "Maintenance reason should match");
+
+        assertFalse(maintenanceDevices.stream().anyMatch(d -> d.getDeviceId().equals(deviceId2)));
 
         // 4. VERIFY
-        verify(repository, times(2)).findById(deviceId);
-        verify(repository, times(1)).save(phone);
+        verify(repository, times(1)).findAll();
+        verify(repository, never()).save(any(Device.class));
     }
 
 }
