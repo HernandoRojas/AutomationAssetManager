@@ -15,8 +15,12 @@ dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
 
-    // 2. Engine: Required by Gradle to RUN the tests (Solves your error)
+    // 2. Engine: Required by Gradle to RUN the tests written with JUnit 5
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // Mockito Core and JUnit 5 Integration
+    testImplementation 'org.mockito:mockito-core:5.5.0'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.5.0'
 }
 
 test {
