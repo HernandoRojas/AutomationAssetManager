@@ -1,5 +1,7 @@
 package model;
 
+import java.time.LocalDate;
+
 import exception.InvalidDeviceStateException;
 
 public abstract class Device {
@@ -9,6 +11,7 @@ public abstract class Device {
     private final String operatingSystem;
     private DeviceStatus status;
     private String maintenanceReason;
+    private LocalDate decommissionDate;
 
     protected Device(String deviceId, String brand, String model, String operatingSystem) {
         if (deviceId == null || deviceId.isBlank()) {
@@ -45,6 +48,7 @@ public abstract class Device {
     
 
     public void rent() {
+        ensuredNotDecommissioned();
         if (this.status != DeviceStatus.AVAILABLE) {
             throw new InvalidDeviceStateException(this.deviceId, "rent", this.status.name());
         } else {
@@ -57,6 +61,7 @@ public abstract class Device {
     }
 
     public void returnToInventory() {
+        ensuredNotDecommissioned();
         if (this.status != DeviceStatus.IN_USE) {
             throw new InvalidDeviceStateException(this.deviceId, "return", this.status.name());
         } else {
@@ -65,6 +70,7 @@ public abstract class Device {
     }
 
     public void sendToMaintenance(String reason) {
+        ensuredNotDecommissioned();
         if (this.status == DeviceStatus.UNDER_REPAIR) {
             throw new InvalidDeviceStateException(this.deviceId, "send to maintenance", this.status.name());
         } 
@@ -73,11 +79,27 @@ public abstract class Device {
     }
 
     public void repairCompleted() {
+        ensuredNotDecommissioned();
         if (this.status != DeviceStatus.UNDER_REPAIR) {
             throw new InvalidDeviceStateException(this.deviceId, "complete repair", this.status.name());
         }
         this.status = DeviceStatus.AVAILABLE;
         this.maintenanceReason = null;
+    }
+
+    public void decommission() {
+        ensuredNotDecommissioned();
+        if (this.status == DeviceStatus.IN_USE) {
+            throw new InvalidDeviceStateException(this.deviceId, "decommission", this.status.name());
+        }
+        this.status = DeviceStatus.DECOMMISSIONED;
+        this.decommissionDate = LocalDate.now();
+    }
+
+    private void ensuredNotDecommissioned() {
+        if (this.status == DeviceStatus.DECOMMISSIONED) {
+            throw new InvalidDeviceStateException(this.deviceId, "operate on", this.status.name());
+        }
     }
 
     @Override
