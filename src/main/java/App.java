@@ -26,6 +26,8 @@ public class App {
         System.out.println("\nInventory before rental:");
         assetService.getAllAvailableDevices().forEach(System.out::println);
 
+        // 4. TEST RENTAL AND RETURN
+
         try {
             System.out.println("\nAttempting to rent device: M001...");
             assetService.rentDevice("M001");
@@ -34,7 +36,7 @@ public class App {
             // M001 should no longer appear in 'available' list
             assetService.getAllAvailableDevices().forEach(System.out::println);
 
-            // 4. TEST ERROR HANDLING: Attempting to rent the same device again
+            // TEST ERROR HANDLING: Attempting to rent the same device again
             //System.out.println("\nAttempting to rent M001 again (this should fail)...");
             //assetService.rentDevice("M001");
 
@@ -48,6 +50,8 @@ public class App {
             System.err.println("ALERT: " + e.getMessage());
         }
 
+        // 5. TEST MAINTENANCE
+
         try {
             System.out.println("\nSending device L001 to maintenance...");
             assetService.moveDeviceToMaintenance("L001", "Screen issue");
@@ -60,6 +64,22 @@ public class App {
 
             System.out.println("\nInventory after completing repair for L001:");
             assetService.getAllAvailableDevices().forEach(System.out::println);
+
+        } catch ( RuntimeException e) {
+            System.err.println("ALERT: " + e.getMessage());
+        }
+
+        // 6. TEST DECOMMISSIONING
+
+        try{    
+            System.out.println("\nDecommissioning device M002...");
+            assetService.decommissionDevice("M002");
+
+            System.out.println("\nInventory after decommissioning M002:");
+            assetService.getAllAvailableDevices().forEach(System.out::println);
+
+            System.out.println("\nAll Decommissioned Devices:");
+            assetService.getAllDecommissionedDevices().forEach(System.out::println);
 
         } catch ( RuntimeException e) {
             System.err.println("ALERT: " + e.getMessage());

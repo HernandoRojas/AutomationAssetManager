@@ -61,6 +61,12 @@ public class AssetService {
                 .toList();
     }
 
+    public List<Device> getAllDecommissionedDevices() {
+        return repository.findAll().stream()
+                .filter(d -> d.getStatus() == DeviceStatus.DECOMMISSIONED)
+                .toList();
+    }
+
     public void returnDevice(String deviceId) {
         Device device = findDeviceById(deviceId)
                 .orElseThrow(() -> new DeviceNotFoundException(deviceId));
@@ -89,5 +95,15 @@ public class AssetService {
 
         repository.save(device);
         System.out.println("Device repair completed: " + deviceId);
+    }
+
+    public void decommissionDevice(String deviceId) {
+        Device device = findDeviceById(deviceId)
+                .orElseThrow(() -> new DeviceNotFoundException(deviceId));
+
+        device.decommission();
+
+        repository.save(device);
+        System.out.println("Device decommissioned: " + deviceId);
     }
 }
