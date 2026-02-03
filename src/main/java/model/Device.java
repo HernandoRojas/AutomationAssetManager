@@ -46,6 +46,9 @@ public abstract class Device {
         this.status = status;
     }
     
+    public LocalDate getDecommissionDate() {
+        return decommissionDate;
+    }
 
     public void rent() {
         ensuredNotDecommissioned();

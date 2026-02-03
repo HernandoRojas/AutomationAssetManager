@@ -21,6 +21,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -372,4 +373,141 @@ class AssetServiceTest {
         verify(repository, never()).save(any(Device.class));
     }
 
+    @Test
+    @DisplayName("Should throw DeviceNotFoundException when moving non-existent device to decommission")
+    void testMoveNonExistentDeviceToDecommission() {
+        // 1. ARRANGE
+        String deviceId = "NON-EXISTENT-ID";
+        
+        when(repository.findById(deviceId)).thenReturn(Optional.empty());
+        // 2. ACT & ASSERT
+        assertThrows(DeviceNotFoundException.class, () -> {
+            assetService.decommissionDevice(deviceId);
+        });
+        // 3. VERIFY
+        verify(repository, times(1)).findById(deviceId);
+        verify(repository, never()).save(any(Device.class));
+    }
+
+    @Test
+    @DisplayName("Should successfully decommission an available device")
+    void testDecommissionAvailableDevice() {
+        // 1. ARRANGE
+        String deviceId = "M1";
+        MobilePhone phone = new MobilePhone(deviceId, "Apple", "iPhone 15", "iOS", "+123");
+
+        when(repository.findById(deviceId)).thenReturn(Optional.of(phone));
+
+        // 2. ACT - Decommission the device
+        assetService.decommissionDevice(deviceId);
+
+        // 3. ASSERT
+        assertEquals(DeviceStatus.DECOMMISSIONED, phone.getStatus(), "Device should be DECOMMISSIONED");
+
+        // 4. VERIFY
+        verify(repository, times(1)).findById(deviceId);
+        verify(repository, times(1)).save(phone);
+    }
+
+    @Test
+    @DisplayName("Should throw InvalidDeviceStateException when trying to decommission a device that is already decommissioned")
+    void testDecommissionAlreadyDecommissionedDevice() {
+        // 1. ARRANGE
+        String deviceId = "M1";
+        MobilePhone phone = new MobilePhone(deviceId, "Apple", "iPhone 15", "iOS", "+123");
+        phone.decommission();
+
+        when(repository.findById(deviceId)).thenReturn(Optional.of(phone));
+
+        // 2. ACT & ASSERT
+        assertThrows(InvalidDeviceStateException.class, () -> {
+            assetService.decommissionDevice(deviceId);
+        });
+
+        // 3. VERIFY
+        verify(repository, times(1)).findById(deviceId);
+        verify(repository, never()).save(any(Device.class));
+    }
+
+    @Test
+    @DisplayName("Should throw InvalidDeviceStateException when trying to decommission a device that is in use")
+    void testDecommissionDeviceInUse() {
+        // 1. ARRANGE
+        String deviceId = "M1";
+        MobilePhone phone = new MobilePhone(deviceId, "Apple", "iPhone 15", "iOS", "+123");
+        phone.rent();
+
+        when(repository.findById(deviceId)).thenReturn(Optional.of(phone));
+
+        // 2. ACT & ASSERT
+        assertThrows(InvalidDeviceStateException.class, () -> {
+            assetService.decommissionDevice(deviceId);
+        });
+
+        // 3. VERIFY
+        verify(repository, times(1)).findById(deviceId);
+        verify(repository, never()).save(any(Device.class));
+    }
+
+    @Test
+    @DisplayName("Should throw InvalidDeviceStateException when trying to rent a decommissioned device")
+    void testRentDecommissionedDevice() {
+        // 1. ARRANGE
+        String deviceId = "M1";
+        MobilePhone phone = new MobilePhone(deviceId, "Apple", "iPhone 15", "iOS", "+123");
+        phone.decommission();
+
+        when(repository.findById(deviceId)).thenReturn(Optional.of(phone));
+
+        // 2. ACT & ASSERT
+        assertThrows(InvalidDeviceStateException.class, () -> {
+            assetService.rentDevice(deviceId);
+        });
+
+        // 3. VERIFY
+        verify(repository, times(1)).findById(deviceId);
+        verify(repository, never()).save(any(Device.class));
+    }
+
+    @Test
+    @DisplayName("Should throw InvalidDeviceStateException when trying to return a decommissioned device")
+    void testReturnDecommissionedDevice() {
+        // 1. ARRANGE
+        String deviceId = "M1";
+        MobilePhone phone = new MobilePhone(deviceId, "Apple", "iPhone 15", "iOS", "+123");
+        phone.decommission();
+
+        when(repository.findById(deviceId)).thenReturn(Optional.of(phone));
+
+        // 2. ACT & ASSERT
+        assertThrows(InvalidDeviceStateException.class, () -> {
+            assetService.returnDevice(deviceId);
+        });
+
+        // 3. VERIFY
+        verify(repository, times(1)).findById(deviceId);
+        verify(repository, never()).save(any(Device.class));
+    }
+
+    @Test
+    @DisplayName("Should successfully match the date of decommissioned device")
+    void testDecommissionedDeviceDate() {
+        // 1. ARRANGE
+        String deviceId = "M1";
+        MobilePhone phone = new MobilePhone(deviceId, "Apple", "iPhone 15", "iOS", "+123");
+
+        when(repository.findById(deviceId)).thenReturn(Optional.of(phone));
+
+        // 2. ACT - Decommission the device
+        assetService.decommissionDevice(deviceId);
+
+        // 3. ASSERT
+        assertEquals(DeviceStatus.DECOMMISSIONED, phone.getStatus(), "Device should be DECOMMISSIONED");
+        assertNotNull(phone.getDecommissionDate(), "Decommission date should be set");
+        assertTrue(phone.getDecommissionDate().isEqual(LocalDate.now()), "Date should be today");
+
+        // 4. VERIFY
+        verify(repository, times(1)).findById(deviceId);
+        verify(repository, times(1)).save(phone);
+    }
 }
