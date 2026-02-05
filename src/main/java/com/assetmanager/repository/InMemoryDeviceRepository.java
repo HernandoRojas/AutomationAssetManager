@@ -1,13 +1,15 @@
-package repository;
+package com.assetmanager.repository;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.springframework.stereotype.Repository;
 
-import model.Device;
+import com.assetmanager.model.Device;
 
+@Repository
 public class InMemoryDeviceRepository implements DeviceRepository {
     // Map<Key, Value> -> Map<ID, DeviceObject>
     private final Map<String, Device> inventory = new HashMap<>();

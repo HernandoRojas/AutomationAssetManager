@@ -1,9 +1,9 @@
-package repository;
+package com.assetmanager.repository;
 
 import java.util.List;
 import java.util.Optional;
 
-import model.Device;
+import com.assetmanager.model.Device;
 
 public interface DeviceRepository {
     void save(Device device);

@@ -1,4 +1,4 @@
-package model;
+package com.assetmanager.model;
 
 public enum DeviceStatus {
     AVAILABLE,

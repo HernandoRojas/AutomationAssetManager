@@ -1,4 +1,4 @@
-package exception;
+package com.assetmanager.exception;
 
 public class InvalidDeviceStateException extends AssetManagerException {
     public InvalidDeviceStateException(String id, String action, String currentStatus) {
