@@ -46,6 +46,10 @@ public class AssetService {
         System.out.println("Device rented successfully: " + deviceId);
     }
 
+    public List<Device> getAllDevices() {
+        return repository.findAll();
+    }
+
     public List<Device> getAllAvailableDevices() {
         return repository.findAll().stream()
                 .filter(d -> d.getStatus() == DeviceStatus.AVAILABLE)
