@@ -1,4 +1,4 @@
-package exception;
+package com.assetmanager.exception;
 
 public class DeviceNotFoundException extends AssetManagerException{
     public DeviceNotFoundException(String id) {

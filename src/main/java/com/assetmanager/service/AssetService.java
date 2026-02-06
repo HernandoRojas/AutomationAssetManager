@@ -1,13 +1,16 @@
-package service;
+package com.assetmanager.service;
 
 import java.util.List;
 import java.util.Optional;
 
-import exception.DeviceNotFoundException;
-import model.Device;
-import model.DeviceStatus;
-import repository.DeviceRepository;
+import org.springframework.stereotype.Service;
 
+import com.assetmanager.exception.DeviceNotFoundException;
+import com.assetmanager.model.Device;
+import com.assetmanager.model.DeviceStatus;
+import com.assetmanager.repository.DeviceRepository;
+
+@Service
 public class AssetService {
     // We depend on the Interface, not the implementation!
     private final DeviceRepository repository;
@@ -29,6 +32,11 @@ public class AssetService {
         repository.save(device);
     }
 
+    public Device getCreatedDevice(String deviceId) {
+        return findDeviceById(deviceId)
+                .orElseThrow(() -> new DeviceNotFoundException(deviceId));
+    }
+
     public void rentDevice(String deviceId) {
         // 1. Find the device
         Device device = findDeviceById(deviceId)
@@ -41,6 +49,10 @@ public class AssetService {
         // 3. Persist the change
         repository.save(device);
         System.out.println("Device rented successfully: " + deviceId);
+    }
+
+    public List<Device> getAllDevices() {
+        return repository.findAll();
     }
 
     public List<Device> getAllAvailableDevices() {

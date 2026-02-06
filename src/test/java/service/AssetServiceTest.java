@@ -7,12 +7,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import exception.DeviceNotFoundException;
-import repository.DeviceRepository;
-import exception.InvalidDeviceStateException;
-import model.Device;
-import model.DeviceStatus;
-import model.MobilePhone;
+import com.assetmanager.exception.DeviceNotFoundException;
+import com.assetmanager.exception.InvalidDeviceStateException;
+import com.assetmanager.model.Device;
+import com.assetmanager.model.DeviceStatus;
+import com.assetmanager.model.MobilePhone;
+import com.assetmanager.repository.DeviceRepository;
+import com.assetmanager.service.AssetService;
+
 import org.junit.jupiter.api.DisplayName;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;

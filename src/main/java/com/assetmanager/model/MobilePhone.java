@@ -1,4 +1,4 @@
-package model;
+package com.assetmanager.model;
 
 public class MobilePhone extends Device {
     private String phoneNumber;

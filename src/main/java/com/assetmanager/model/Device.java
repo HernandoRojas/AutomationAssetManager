@@ -1,19 +1,40 @@
-package model;
+package com.assetmanager.model;
 
 import java.time.LocalDate;
 
-import exception.InvalidDeviceStateException;
+import com.assetmanager.exception.InvalidDeviceStateException;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+@JsonTypeInfo(
+  use = JsonTypeInfo.Id.NAME, 
+  include = JsonTypeInfo.As.PROPERTY, 
+  property = "type" // This is the key we will use in Postman
+)
+@JsonSubTypes({
+  @JsonSubTypes.Type(value = MobilePhone.class, name = "phone"),
+  @JsonSubTypes.Type(value = Laptop.class, name = "laptop")
+})
 public abstract class Device {
-    private final String deviceId; // Can be UUID or any unique identifier
-    private final String brand;
-    private final String model;
-    private final String operatingSystem;
+    private String deviceId; // Can be UUID or any unique identifier
+    private String brand;
+    private String model;
+    private String operatingSystem;
     private DeviceStatus status;
     private String maintenanceReason;
     private LocalDate decommissionDate;
 
-    protected Device(String deviceId, String brand, String model, String operatingSystem) {
+    private Device() {}
+
+    @JsonCreator
+    public Device(
+        @JsonProperty("deviceId") String deviceId, 
+        @JsonProperty("brand") String brand, 
+        @JsonProperty("model") String model, 
+        @JsonProperty("operatingSystem") String operatingSystem
+    ){
         if (deviceId == null || deviceId.isBlank()) {
         throw new IllegalArgumentException("Device ID is mandatory and cannot be empty.");
         }
