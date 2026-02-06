@@ -29,6 +29,15 @@ dependencies {
     
     // Standard testing dependencies
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    // The core automation library
+    testImplementation 'io.rest-assured:rest-assured:5.4.0'
+    
+    // For advanced JSON assertions (checking specific fields in the body)
+    testImplementation 'io.rest-assured:json-path:5.4.0'
+    
+    // Allows RestAssured to work seamlessly with your Device objects
+    testImplementation 'io.rest-assured:json-schema-validator:5.4.0'
 }
 
 test {

@@ -32,6 +32,11 @@ public class AssetService {
         repository.save(device);
     }
 
+    public Device getCreatedDevice(String deviceId) {
+        return findDeviceById(deviceId)
+                .orElseThrow(() -> new DeviceNotFoundException(deviceId));
+    }
+
     public void rentDevice(String deviceId) {
         // 1. Find the device
         Device device = findDeviceById(deviceId)

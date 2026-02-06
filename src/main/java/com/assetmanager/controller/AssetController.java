@@ -32,14 +32,24 @@ public class AssetController {
     @PostMapping
     public ResponseEntity<Device> registerDevice(@RequestBody Device device) {
         assetService.registerNewDevice(device);
+        Device createdDevice = assetService.getCreatedDevice(device.getDeviceId());
+
         // Returning 201 Created as per US-005 requirements
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        return new ResponseEntity<>(createdDevice, HttpStatus.CREATED);
     }
 
     @PatchMapping("/{id}/decommission")
     public ResponseEntity<Device> decommissionDevice(@PathVariable String id) {
         assetService.decommissionDevice(id);
-        return new ResponseEntity<>(HttpStatus.OK);
+        Device decommissionedDevice = assetService.getCreatedDevice(id);
+        return new ResponseEntity<>(decommissionedDevice, HttpStatus.OK);
+    }
+
+    @PostMapping("/{id}/rent")
+    public ResponseEntity<Device> rentDevice(@PathVariable String id) {
+        assetService.rentDevice(id);
+        Device rentedDevice = assetService.getCreatedDevice(id);
+        return new ResponseEntity<>(rentedDevice, HttpStatus.OK);
     }
 
 }
