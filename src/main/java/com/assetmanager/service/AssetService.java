@@ -55,6 +55,24 @@ public class AssetService {
         return repository.findAll();
     }
 
+    public List<Device> findByStatusAndBrand(DeviceStatus status, String brand) {
+        if (status == null && (brand == null || brand.isBlank())) {
+            return repository.findAll();
+        } else if (status != null && (brand == null || brand.isBlank())) {
+            return repository.findAll().stream()
+                    .filter(d -> d.getStatus() == status)
+                    .toList();
+        } else if (status == null) {
+            return repository.findAll().stream()
+                    .filter(d -> d.getBrand().equalsIgnoreCase(brand))
+                    .toList();
+        } else {
+            return repository.findAll().stream()
+                    .filter(d -> d.getStatus() == status && d.getBrand().equalsIgnoreCase(brand))
+                    .toList();
+        }
+    }
+
     public List<Device> getAllAvailableDevices() {
         return repository.findAll().stream()
                 .filter(d -> d.getStatus() == DeviceStatus.AVAILABLE)
