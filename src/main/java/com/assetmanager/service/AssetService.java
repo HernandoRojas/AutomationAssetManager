@@ -26,7 +26,7 @@ public class AssetService {
 
     public void registerNewDevice(Device device) {
         // Business Rule: IDs must be unique (simplified check)
-        if (findDeviceById(device.getDeviceId()).isPresent()) {
+        if (repository.existsById(device.getDeviceId())) {
             throw new IllegalArgumentException("Device ID already exists: " + device.getDeviceId());
         }
         repository.save(device);
@@ -37,10 +37,40 @@ public class AssetService {
                 .orElseThrow(() -> new DeviceNotFoundException(deviceId));
     }
 
+    public List<Device> findByStatusAndBrand(DeviceStatus status, String brand) {
+        if (status != null && (brand != null && !brand.isBlank())) {
+            return repository.findByStatusAndBrandIgnoreCase(status, brand);
+        } else if (status != null) {
+            return repository.findByStatus(status);
+        } else if (brand != null && !brand.isBlank()) {
+            return repository.findByBrandIgnoreCase(brand);
+        }
+        return repository.findAll();
+    }
+
+    public List<Device> getAllDevices() {
+        return repository.findAll();
+    }
+
+    public List<Device> getAllAvailableDevices() {
+        return repository.findByStatus(DeviceStatus.AVAILABLE);
+    }
+
+    public List<Device> getAllOnMaintenanceDevices() {
+        return repository.findByStatus(DeviceStatus.UNDER_REPAIR);
+    }
+
+    public List<Device> getAllRentedDevices() {
+        return repository.findByStatus(DeviceStatus.IN_USE);
+    }
+
+    public List<Device> getAllDecommissionedDevices() {
+        return repository.findByStatus(DeviceStatus.DECOMMISSIONED);
+    }
+
     public void rentDevice(String deviceId) {
         // 1. Find the device
-        Device device = findDeviceById(deviceId)
-                .orElseThrow(() -> new DeviceNotFoundException(deviceId));
+        Device device = getCreatedDevice(deviceId);
 
         // 2. Business Logic: The "rent" method inside Device handles the status check
         // This is "Tell, Don't Ask" principle.
@@ -51,55 +81,8 @@ public class AssetService {
         System.out.println("Device rented successfully: " + deviceId);
     }
 
-    public List<Device> getAllDevices() {
-        return repository.findAll();
-    }
-
-    public List<Device> findByStatusAndBrand(DeviceStatus status, String brand) {
-        if (status == null && (brand == null || brand.isBlank())) {
-            return repository.findAll();
-        } else if (status != null && (brand == null || brand.isBlank())) {
-            return repository.findAll().stream()
-                    .filter(d -> d.getStatus() == status)
-                    .toList();
-        } else if (status == null) {
-            return repository.findAll().stream()
-                    .filter(d -> d.getBrand().equalsIgnoreCase(brand))
-                    .toList();
-        } else {
-            return repository.findAll().stream()
-                    .filter(d -> d.getStatus() == status && d.getBrand().equalsIgnoreCase(brand))
-                    .toList();
-        }
-    }
-
-    public List<Device> getAllAvailableDevices() {
-        return repository.findAll().stream()
-                .filter(d -> d.getStatus() == DeviceStatus.AVAILABLE)
-                .toList();
-    }
-
-    public List<Device> getAllOnMaintenanceDevices() {
-        return repository.findAll().stream()
-                .filter(d -> d.getStatus() == DeviceStatus.UNDER_REPAIR)
-                .toList();
-    }
-
-    public List<Device> getAllRentedDevices() {
-        return repository.findAll().stream()
-                .filter(d -> d.getStatus() == DeviceStatus.IN_USE)
-                .toList();
-    }
-
-    public List<Device> getAllDecommissionedDevices() {
-        return repository.findAll().stream()
-                .filter(d -> d.getStatus() == DeviceStatus.DECOMMISSIONED)
-                .toList();
-    }
-
     public void returnDevice(String deviceId) {
-        Device device = findDeviceById(deviceId)
-                .orElseThrow(() -> new DeviceNotFoundException(deviceId));
+        Device device = getCreatedDevice(deviceId);
 
         device.returnToInventory();
 
@@ -108,8 +91,7 @@ public class AssetService {
     }
 
     public void moveDeviceToMaintenance(String deviceId, String reason) {
-        Device device = findDeviceById(deviceId)
-                .orElseThrow(() -> new DeviceNotFoundException(deviceId));
+        Device device = getCreatedDevice(deviceId);
 
         device.sendToMaintenance(reason);
 
@@ -118,8 +100,7 @@ public class AssetService {
     }
 
     public void completeDeviceRepair(String deviceId) {
-        Device device = findDeviceById(deviceId)
-                .orElseThrow(() -> new DeviceNotFoundException(deviceId));
+        Device device = getCreatedDevice(deviceId);
 
         device.repairCompleted();
 
@@ -128,8 +109,7 @@ public class AssetService {
     }
 
     public void decommissionDevice(String deviceId) {
-        Device device = findDeviceById(deviceId)
-                .orElseThrow(() -> new DeviceNotFoundException(deviceId));
+        Device device = getCreatedDevice(deviceId);
 
         device.decommission();
 

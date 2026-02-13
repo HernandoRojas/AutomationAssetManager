@@ -38,6 +38,9 @@ dependencies {
     
     // Allows RestAssured to work seamlessly with your Device objects
     testImplementation 'io.rest-assured:json-schema-validator:5.4.0'
+
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    runtimeOnly 'com.h2database:h2'
 }
 
 test {

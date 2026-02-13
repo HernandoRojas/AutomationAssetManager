@@ -1,12 +1,21 @@
 package com.assetmanager.repository;
 
-import java.util.List;
-import java.util.Optional;
-
 import com.assetmanager.model.Device;
+import com.assetmanager.model.DeviceStatus;
 
-public interface DeviceRepository {
-    void save(Device device);
-    Optional<Device> findById(String id);
-    List<Device> findAll();
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface DeviceRepository extends JpaRepository<Device, String> {
+    // Finds by status
+    List<Device> findByStatus(DeviceStatus status);
+
+    // Finds by brand (ignoring case)
+    List<Device> findByBrandIgnoreCase(String brand);
+
+    // Combined filter for your search UI
+    List<Device> findByStatusAndBrandIgnoreCase(DeviceStatus status, String brand);
 }
