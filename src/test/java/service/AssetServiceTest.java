@@ -42,7 +42,8 @@ class AssetServiceTest {
         // 1. ARRANGE
         String deviceId = "M1";
         MobilePhone phone = new MobilePhone(deviceId, "Apple", "iPhone 15", "iOS", "+123");
-        when(repository.findById(deviceId)).thenReturn(Optional.empty());
+
+        when(repository.existsById(deviceId)).thenReturn(false);
 
         // 2. ACT
         assetService.registerNewDevice(phone);
@@ -56,7 +57,7 @@ class AssetServiceTest {
         verify(repository,times(1)).save(phone);
 
         // Verify that the service checked for existing ID
-        verify(repository,times(1)).findById(deviceId);
+        verify(repository,times(1)).existsById(deviceId);
     }
 
     @Test
@@ -216,7 +217,7 @@ class AssetServiceTest {
         phone2.rent(); 
         phone3.sendToMaintenance("Broken screen");
 
-        when(repository.findAll()).thenReturn(List.of(phone1, phone2));
+        when(repository.findByStatus(DeviceStatus.AVAILABLE)).thenReturn(List.of(phone1));
 
         // 2. ACT
         List<Device> available = assetService.getAllAvailableDevices();
@@ -229,8 +230,7 @@ class AssetServiceTest {
         assertFalse(available.stream().anyMatch(d -> d.getDeviceId().equals(deviceId3)));
 
         // 4. VERIFY
-        verify(repository, times(1)).findAll();
-
+        verify(repository, times(1)).findByStatus(DeviceStatus.AVAILABLE);
         verify(repository, never()).save(any(Device.class));
     }
 
@@ -354,9 +354,8 @@ class AssetServiceTest {
         String deviceId1 = "M1";
         String deviceId2 = "M2";
         MobilePhone phone1 = new MobilePhone(deviceId1, "Apple", "iPhone 15", "iOS", "+123");
-        MobilePhone phone2 = new MobilePhone(deviceId2, "Samsung", "Galaxy S20", "Android", "+456");
 
-        when(repository.findAll()).thenReturn(List.of(phone1,phone2));
+        when(repository.findByStatus(DeviceStatus.UNDER_REPAIR)).thenReturn(List.of(phone1));
 
         // 2. ACT - Move device to maintenance
         phone1.sendToMaintenance("Screen issue");
@@ -371,7 +370,7 @@ class AssetServiceTest {
         assertFalse(maintenanceDevices.stream().anyMatch(d -> d.getDeviceId().equals(deviceId2)));
 
         // 4. VERIFY
-        verify(repository, times(1)).findAll();
+        verify(repository, times(1)).findByStatus(DeviceStatus.UNDER_REPAIR);
         verify(repository, never()).save(any(Device.class));
     }
 

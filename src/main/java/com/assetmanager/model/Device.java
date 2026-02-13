@@ -1,5 +1,5 @@
 package com.assetmanager.model;
-
+import jakarta.persistence.*;
 import java.time.LocalDate;
 
 import com.assetmanager.exception.InvalidDeviceStateException;
@@ -8,25 +8,33 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+@Entity // Tells JPA this is a database table
+@Inheritance(strategy = InheritanceType.JOINED)
 @JsonTypeInfo(
   use = JsonTypeInfo.Id.NAME, 
   include = JsonTypeInfo.As.PROPERTY, 
-  property = "type" // This is the key we will use in Postman
+  property = "type" // This is the key we will use in method requests to specify the device type (e.g., "phone" or "laptop")
 )
 @JsonSubTypes({
   @JsonSubTypes.Type(value = MobilePhone.class, name = "phone"),
   @JsonSubTypes.Type(value = Laptop.class, name = "laptop")
 })
 public abstract class Device {
-    private String deviceId; // Can be UUID or any unique identifier
+
+    @Id // Primary Key
+    private String deviceId;
+
     private String brand;
     private String model;
     private String operatingSystem;
-    private DeviceStatus status;
+
+    @Enumerated(EnumType.STRING)
+    private DeviceStatus status = DeviceStatus.AVAILABLE;
+    
     private String maintenanceReason;
     private LocalDate decommissionDate;
 
-    private Device() {}
+    protected Device() {}
 
     @JsonCreator
     public Device(
@@ -42,7 +50,6 @@ public abstract class Device {
         this.brand = brand;
         this.model = model;
         this.operatingSystem = operatingSystem;
-        this.status = DeviceStatus.AVAILABLE;
     }
 
     //Getters

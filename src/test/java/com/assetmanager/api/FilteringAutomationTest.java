@@ -3,7 +3,6 @@ package com.assetmanager.api;
 import org.junit.jupiter.api.Test;
 
 import io.restassured.http.ContentType;
-import org.junit.jupiter.api.Test;
 import static io.restassured.RestAssured.*;
 import static org.hamcrest.Matchers.*;
 
@@ -100,10 +99,10 @@ public class FilteringAutomationTest extends BaseApiTest {
         .then()
             .statusCode(200)
             .body("size()", equalTo(2))
-            .body("[0].deviceId", equalTo("M003"))
+            .body("[0].deviceId", equalTo("M001"))
             .body("[0].status", equalTo("AVAILABLE"))
             .body("[0].brand", equalTo("Apple"))
-            .body("[1].deviceId", equalTo("M001"))
+            .body("[1].deviceId", equalTo("M003"))
             .body("[1].status", equalTo("AVAILABLE"))
             .body("[1].brand", equalTo("Apple"));
 
