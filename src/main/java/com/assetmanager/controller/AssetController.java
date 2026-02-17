@@ -17,6 +17,8 @@ import com.assetmanager.model.Device;
 import com.assetmanager.model.DeviceStatus;
 import com.assetmanager.service.AssetService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/assets")
 public class AssetController {
@@ -38,7 +40,7 @@ public class AssetController {
 
 
     @PostMapping
-    public ResponseEntity<Device> registerDevice(@RequestBody Device device) {
+    public ResponseEntity<Device> registerDevice(@Valid @RequestBody Device device) {
         assetService.registerNewDevice(device);
         Device createdDevice = assetService.getCreatedDevice(device.getDeviceId());
         return new ResponseEntity<>(createdDevice, HttpStatus.CREATED);
