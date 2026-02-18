@@ -2,6 +2,9 @@ package com.assetmanager.api;
 
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+
 import static io.restassured.RestAssured.*;
 import static org.hamcrest.Matchers.*;
 
@@ -87,97 +90,32 @@ public class NegativeAutomationTest extends BaseApiTest {
             .body("error", equalTo("Business Rule Violation"));
     }
 
-    @Test
-    public void shouldReturnBadRequestForMissingBrandFieldOnLaptop() {
-        String incompleteDeviceJson = """
+    @ParameterizedTest
+    @CsvSource({
+        "laptop, , Inspire, brand: Brand is mandatory", // Missing brand laptop
+        "laptop, Dell, , model: Model is mandatory",   // Missing model laptop
+        "phone, , iPhone 15, brand: Brand is mandatory", // Missing brand phone
+        "phone, Apple, , model: Model is mandatory"    // Missing model phone
+    })
+    public void shouldReturnBadRequestForMissingFields(String type, String brand, String model, String expectedMessage) {
+        String payload = """
             {
-                "type": "laptop",
-                "deviceId": "TEST-MISSING-FIELDS-01",
-                "model": "Inspire",
-                "operatingSystem": "Windows 11",
-                "ramSizeGb": 16
+                "type": "%s",
+                "deviceId": "TEST-PARAM-01",
+                "brand": "%s",
+                "model": "%s"
             }
-        """;
+        """.formatted(type, brand == null ? "" : brand, model == null ? "" : model);
 
         given()
             .contentType(ContentType.JSON)
-            .body(incompleteDeviceJson)
+            .body(payload)
         .when()
             .post()
         .then()
             .statusCode(400)
             .body("error", equalTo("Validation Failed"))
-            .body("message", containsString("brand: Brand is mandatory"));
-
+            .body("message", containsString(expectedMessage));
     }
-
-    @Test
-    public void shouldReturnBadRequestForMissingModelFieldOnLaptop() {
-        String incompleteDeviceJson = """
-            {
-                "type": "laptop",
-                "deviceId": "TEST-MISSING-FIELDS-02",
-                "brand": "TestBrand",
-                "operatingSystem": "Windows 11",
-                "ramSizeGb": 16
-            }
-        """;
-
-        given()
-            .contentType(ContentType.JSON)
-            .body(incompleteDeviceJson)
-        .when()
-            .post()
-        .then()
-            .statusCode(400)
-            .body("error", equalTo("Validation Failed"))
-            .body("message", containsString("model: Model is mandatory"));
-    }
-
-    @Test
-    public void shouldReturnBadRequestForMissingBrandFieldOnPhone() {
-        String incompleteDeviceJson = """
-            {
-                "type": "phone",
-                "deviceId": "TEST-MISSING-BRAND-PHONE-01",
-                "model": "TestModel",
-                "operatingSystem": "iOS 16",
-                "phoneNumber": "3124567891"
-            }
-        """;
-
-        given()
-            .contentType(ContentType.JSON)
-            .body(incompleteDeviceJson)
-        .when()
-            .post()
-        .then()
-            .statusCode(400)
-            .body("error", equalTo("Validation Failed"))
-            .body("message", containsString("brand: Brand is mandatory"));
-    }
-
-    @Test
-    public void shouldReturnBadRequestForMissingModelFieldOnPhone() {
-        String incompleteDeviceJson = """
-            {
-                "type": "phone",
-                "deviceId": "TEST-MISSING-MODEL-PHONE-01",
-                "brand": "TestBrand",
-                "operatingSystem": "iOS 16",
-                "phoneNumber": "3124567891"
-            }
-        """;
-
-        given()
-            .contentType(ContentType.JSON)
-            .body(incompleteDeviceJson)
-        .when()
-            .post()
-        .then()
-            .statusCode(400)
-            .body("error", equalTo("Validation Failed"))
-            .body("message", containsString("model: Model is mandatory"));
-    }  
 
 }
