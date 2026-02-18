@@ -1,6 +1,11 @@
 package com.assetmanager.model;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
 import java.time.LocalDate;
+
 
 import com.assetmanager.exception.InvalidDeviceStateException;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -22,9 +27,14 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 public abstract class Device {
 
     @Id // Primary Key
+    @Size(min = 3, max = 20, message = "Device ID must be between 3 and 20 characters")
+    @NotNull(message = "Device ID cannot be null")
     private String deviceId;
 
+    @NotBlank(message = "Brand is mandatory")
     private String brand;
+    
+    @NotBlank(message = "Model is mandatory")
     private String model;
     private String operatingSystem;
 
@@ -43,9 +53,6 @@ public abstract class Device {
         @JsonProperty("model") String model, 
         @JsonProperty("operatingSystem") String operatingSystem
     ){
-        if (deviceId == null || deviceId.isBlank()) {
-        throw new IllegalArgumentException("Device ID is mandatory and cannot be empty.");
-        }
         this.deviceId = deviceId;
         this.brand = brand;
         this.model = model;

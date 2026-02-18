@@ -1,6 +1,7 @@
 package com.assetmanager.model;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Positive;
 
 @Entity
 @Table(name = "laptops")
@@ -14,6 +15,7 @@ public class Laptop extends Device {
         this.ramSizeGb = ramSizeGb;
     }
 
+    @Positive(message = "RAM size must be a positive integer.")
     public int getRamSizeGb() {
         return ramSizeGb;
     }
