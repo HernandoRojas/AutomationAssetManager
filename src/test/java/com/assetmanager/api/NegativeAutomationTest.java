@@ -118,4 +118,83 @@ public class NegativeAutomationTest extends BaseApiTest {
             .body("message", containsString(expectedMessage));
     }
 
+    @Test
+    public void shouldReturnBadRequestForInvalidRamSize() {
+        String invalidRamJson = """
+            {
+                "type": "laptop",
+                "deviceId": "TEST-RAM-01",
+                "brand": "TestBrand",
+                "model": "TestModel",
+                "operatingSystem": "Windows 11",
+                "ramSizeGb": -4
+            }
+        """;
+
+        given()
+            .contentType(ContentType.JSON)
+            .body(invalidRamJson)
+        .when()
+            .post()
+        .then()
+            .statusCode(400)
+            .body("error", equalTo("Validation Failed"))
+            .body("message", containsString("ramSizeGb: RAM size must be a positive integer."));
+    }   
+
+    @ParameterizedTest
+    @CsvSource({
+        "laptop, 01, TestBrand, TestModel, Windows 11, 16", // Short deviceId laptop
+        "laptop, laptoptestbrandtesmodelwindows11, TestBrand , TestModel, Windows 10, 8 "   // Large deviceId laptop
+    })  
+    public void shouldReturnBadRequestForInvalidLaptopDeviceIdLength(String type, String deviceId, String brand, String model, String operatingSystem, int ramSizeGb) {
+        String invalidDeviceIdJson = """
+            {
+                "type": "%s",
+                "deviceId": "%s",
+                "brand": "%s",
+                "model": "%s",
+                "operatingSystem": "%s",
+                "ramSizeGb": %d
+            }
+        """.formatted(type, deviceId, brand, model, operatingSystem, ramSizeGb);
+
+        given()
+            .contentType(ContentType.JSON)
+            .body(invalidDeviceIdJson)
+        .when()
+            .post()
+        .then()
+            .statusCode(400)
+            .body("error", equalTo("Validation Failed"))
+            .body("message", containsString("deviceId: Device ID must be between 3 and 20 characters"));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "phone, 02, iPhone 15, TestModel, MacOS, 3145678465", // Short deviceId
+        "phone, phonetestbrandtestmodelmacos, Apple, TestModel, MacOS, 3145678478" // Large deviceId
+    })  
+    public void shouldReturnBadRequestForInvalidPhoneDeviceIdLength(String type, String deviceId, String brand, String model, String operatingSystem, String phoneNumber) {
+        String invalidDeviceIdJson = """
+            {
+                "type": "%s",
+                "deviceId": "%s",
+                "brand": "%s",
+                "model": "%s",
+                "operatingSystem": "%s",
+                "phoneNumber": "%s"
+            }
+        """.formatted(type, deviceId, brand, model, operatingSystem, phoneNumber);
+
+        given()
+            .contentType(ContentType.JSON)
+            .body(invalidDeviceIdJson)
+        .when()
+            .post()
+        .then()
+            .statusCode(400)
+            .body("error", equalTo("Validation Failed"))
+            .body("message", containsString("deviceId: Device ID must be between 3 and 20 characters"));
+    }
 }
