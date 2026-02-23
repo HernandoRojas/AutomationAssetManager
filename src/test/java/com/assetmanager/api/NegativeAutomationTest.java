@@ -9,7 +9,7 @@ import static io.restassured.RestAssured.*;
 import static org.hamcrest.Matchers.*;
 
 public class NegativeAutomationTest extends BaseApiTest {
-    // This class will contain tests that intentionally trigger error conditions
+    // This class contains tests that intentionally trigger error conditions
     // to verify that the API responds with appropriate error messages and status codes.
 
     @Test

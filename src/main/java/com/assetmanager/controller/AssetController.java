@@ -38,7 +38,6 @@ public class AssetController {
     return ResponseEntity.ok(assetService.findByStatusAndBrand(status, brand));
     }
 
-
     @PostMapping
     public ResponseEntity<Device> registerDevice(@Valid @RequestBody Device device) {
         assetService.registerNewDevice(device);
@@ -81,5 +80,4 @@ public class AssetController {
         Device completedDevice = assetService.getCreatedDevice(id);
         return new ResponseEntity<>(completedDevice, HttpStatus.OK);
     }
-
 }
