@@ -20,7 +20,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
   include = JsonTypeInfo.As.PROPERTY, 
   property = "type" // This is the key we will use in method requests to specify the device type (e.g., "phone" or "laptop")
 )
-@JsonSubTypes({
+@JsonSubTypes({ // existing subtypes of Device, each with a unique "type" identifier
   @JsonSubTypes.Type(value = MobilePhone.class, name = "phone"),
   @JsonSubTypes.Type(value = Laptop.class, name = "laptop")
 })
@@ -108,7 +108,7 @@ public abstract class Device {
     }
 
     public void sendToMaintenance(String reason) {
-        ensuredNotDecommissioned();
+        ensuredNotDecommissioned(); // Cannot send to maintenance if already decommissioned
         if (this.status == DeviceStatus.UNDER_REPAIR) {
             throw new InvalidDeviceStateException(this.deviceId, "send to maintenance", this.status.name());
         } 
@@ -117,7 +117,7 @@ public abstract class Device {
     }
 
     public void repairCompleted() {
-        ensuredNotDecommissioned();
+        ensuredNotDecommissioned(); // Cannot complete repair if already decommissioned
         if (this.status != DeviceStatus.UNDER_REPAIR) {
             throw new InvalidDeviceStateException(this.deviceId, "complete repair", this.status.name());
         }
@@ -126,7 +126,7 @@ public abstract class Device {
     }
 
     public void decommission() {
-        ensuredNotDecommissioned();
+        ensuredNotDecommissioned(); // Cannot decommission if already decommissioned
         if (this.status == DeviceStatus.IN_USE) {
             throw new InvalidDeviceStateException(this.deviceId, "decommission", this.status.name());
         }
@@ -134,7 +134,7 @@ public abstract class Device {
         this.decommissionDate = LocalDate.now();
     }
 
-    private void ensuredNotDecommissioned() {
+    private void ensuredNotDecommissioned() { 
         if (this.status == DeviceStatus.DECOMMISSIONED) {
             throw new InvalidDeviceStateException(this.deviceId, "operate on", this.status.name());
         }

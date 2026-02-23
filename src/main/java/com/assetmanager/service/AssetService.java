@@ -12,10 +12,10 @@ import com.assetmanager.repository.DeviceRepository;
 
 @Service
 public class AssetService {
-    // We depend on the Interface, not the implementation!
+    // We depend on the Interface, not the implementation
     private final DeviceRepository repository;
 
-    // Constructor Injection: This makes the service easy to test
+    // Constructor Injection
     public AssetService(DeviceRepository repository) {
         this.repository = repository;
     }
@@ -72,8 +72,7 @@ public class AssetService {
         // 1. Find the device
         Device device = getCreatedDevice(deviceId);
 
-        // 2. Business Logic: The "rent" method inside Device handles the status check
-        // This is "Tell, Don't Ask" principle.
+        // 2. Business Logic: The "rent" method inside Device handles the status check and state transition
         device.rent();
 
         // 3. Persist the change
@@ -91,6 +90,7 @@ public class AssetService {
     }
 
     public void moveDeviceToMaintenance(String deviceId, String reason) {
+
         Device device = getCreatedDevice(deviceId);
 
         device.sendToMaintenance(reason);
