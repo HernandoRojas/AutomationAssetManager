@@ -44,6 +44,10 @@ public abstract class Device {
     private String maintenanceReason;
     private LocalDate decommissionDate;
 
+    @ManyToOne
+    @JoinColumn(name = "userId")
+    private User user;
+
     protected Device() {}
 
     @JsonCreator
