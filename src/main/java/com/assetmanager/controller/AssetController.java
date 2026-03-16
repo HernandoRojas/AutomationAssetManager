@@ -52,9 +52,9 @@ public class AssetController {
         return new ResponseEntity<>(decommissionedDevice, HttpStatus.OK);
     }
 
-    @PostMapping("/{id}/rent")
-    public ResponseEntity<Device> rentDevice(@PathVariable String id) {
-        assetService.rentDevice(id);
+    @PostMapping("/{id}/rent/{userId}")
+    public ResponseEntity<Device> rentDevice(@PathVariable String id, @PathVariable int userId) {
+        assetService.rentDevice(id, userId);
         Device rentedDevice = assetService.getCreatedDevice(id);
         return new ResponseEntity<>(rentedDevice, HttpStatus.OK);
     }

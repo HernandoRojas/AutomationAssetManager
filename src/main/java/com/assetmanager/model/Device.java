@@ -148,4 +148,8 @@ public abstract class Device {
     public String toString() {
         return String.format("[ID: %s | Brand: %s | Model: %s | Status: %s]", deviceId, brand, model, status);
     }
+
+    public void setOwner(User user) {
+        this.user = user;
+    }
 }
