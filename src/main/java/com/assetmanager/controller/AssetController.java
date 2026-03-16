@@ -80,4 +80,14 @@ public class AssetController {
         Device completedDevice = assetService.getCreatedDevice(id);
         return new ResponseEntity<>(completedDevice, HttpStatus.OK);
     }
+
+    @GetMapping("/user/{employeeId}")
+    public ResponseEntity<List<Device>> getDevicesAsignedToUser(@PathVariable String employeeId) {
+        List<Device> devices = assetService.findDevicesByUserId(employeeId);
+        if (devices.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(devices);
+    }
+    
 }

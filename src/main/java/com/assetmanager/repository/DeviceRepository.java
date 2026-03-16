@@ -2,6 +2,7 @@ package com.assetmanager.repository;
 
 import com.assetmanager.model.Device;
 import com.assetmanager.model.DeviceStatus;
+import com.assetmanager.model.User;
 
 import java.util.List;
 
@@ -18,4 +19,6 @@ public interface DeviceRepository extends JpaRepository<Device, String> {
 
     // Combined filter for your search UI
     List<Device> findByStatusAndBrandIgnoreCase(DeviceStatus status, String brand);
+
+    List<Device> findByUser(User user);
 }

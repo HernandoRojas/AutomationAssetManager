@@ -55,6 +55,19 @@ public class AssetService {
         return repository.findAll();
     }
 
+    public List<User> findUserByEmployeeId(String employeeId) {
+        return userRepository.findByEmployeeIdIgnoreCase(employeeId);
+    }
+
+    public List<Device> findDevicesByUserId(String employeeId) {
+        if (employeeId != null && !employeeId.isBlank()) {
+            return findUserByEmployeeId(employeeId).stream()
+                    .flatMap(user -> repository.findByUser(user).stream())
+                    .toList();
+        }
+        return repository.findAll();
+    }
+
     public List<Device> getAllDevices() {
         return repository.findAll();
     }

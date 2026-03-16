@@ -50,4 +50,8 @@ public class User {
     public int getUserId() {
         return userId;
     }
+
+    public List<Device> getDevices() {
+        return devices;
+    }
 }
