@@ -108,6 +108,7 @@ public abstract class Device {
             throw new InvalidDeviceStateException(this.deviceId, "return", this.status.name());
         } else {
             this.status = DeviceStatus.AVAILABLE;
+            this.user = null; // Clear the user association when returned
         }
     }
 
