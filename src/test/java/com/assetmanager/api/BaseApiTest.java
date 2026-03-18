@@ -7,6 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 
 import com.assetmanager.repository.DeviceRepository;
+import com.assetmanager.repository.UserRepository;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public abstract class BaseApiTest {
@@ -16,6 +17,8 @@ public abstract class BaseApiTest {
 
     @Autowired
     protected DeviceRepository repository; // Inject the repository to verify the DB
+    @Autowired
+    protected UserRepository userRepository; // Inject the UserRepository to verify user-related operations
 
 
     @BeforeEach
@@ -26,5 +29,6 @@ public abstract class BaseApiTest {
 
         // Ensure Database is clean before EVERY test
         repository.deleteAll();
+        userRepository.deleteAll();
     }
 }

@@ -12,6 +12,8 @@ public class NegativeAutomationTest extends BaseApiTest {
     // This class contains tests that intentionally trigger error conditions
     // to verify that the API responds with appropriate error messages and status codes.
 
+    String basePathUser = "/api/users";
+
     @Test
     public void shouldReturnBadRequestForInvalidDeviceType() {
         String invalidDeviceJson = """
@@ -38,11 +40,30 @@ public class NegativeAutomationTest extends BaseApiTest {
     @Test
     public void shouldReturnNotFoundForNonExistentDevice() {
         String nonExistentDeviceId = "NON-EXISTENT-123";
+        String userJson = """
+            {
+                "userId": 1,
+                "username": "Test User",
+                "employeeId": "235425"
+            }     
+        """;
 
+        // Register a user to attempt renting the non-existent device
+        given()
+            .basePath(basePathUser)
+            .contentType(ContentType.JSON)
+            .body(userJson)    
+        .when()
+            .post()
+        .then()
+            .statusCode(201);
+
+        // Attempt to rent a non-existent device
         given()
             .pathParam("id", nonExistentDeviceId)
+            .pathParam("userId", 1)
         .when()
-            .post("/{id}/rent")
+            .post("/{id}/rent/{userId}")
         .then()
             .statusCode(404)
             .body("error", equalTo("Device Not Found"));
@@ -50,6 +71,25 @@ public class NegativeAutomationTest extends BaseApiTest {
 
     @Test
     public void shouldReturnRuleViolationWhenRentingAlreadyRentedDevice() {
+        
+        String userJson = """
+            {
+                "userId": 1,
+                "username": "Test User",
+                "employeeId": "235425"
+            }     
+        """;
+
+        // Register a user to attempt renting the non-existent device
+        given()
+            .basePath(basePathUser)
+            .contentType(ContentType.JSON)
+            .body(userJson)    
+        .when()
+            .post()
+        .then()
+            .statusCode(201);
+
         String deviceId = "TEST-RENT-01";
 
         // First, register a new device
@@ -75,16 +115,18 @@ public class NegativeAutomationTest extends BaseApiTest {
         // Rent the device for the first time
         given()
             .pathParam("id", deviceId)
+            .pathParam("userId", 1)
         .when()
-            .post("/{id}/rent")
+            .post("/{id}/rent/{userId}")
         .then()
             .statusCode(200);
 
         // Attempt to rent the same device again, which should fail
         given()
             .pathParam("id", deviceId)
+            .pathParam("userId", 1)
         .when()
-            .post("/{id}/rent")
+            .post("/{id}/rent/{userId}")
         .then()
             .statusCode(409)
             .body("error", equalTo("Business Rule Violation"));
