@@ -7,6 +7,8 @@ import static org.hamcrest.Matchers.*;
 
 public class DecommissionAutomationTest extends BaseApiTest {
 
+    String basePathUser = "/api/users";
+
     @Test
     public void shouldDecommissionPhoneSuccessfully() {
         // 1. Arrange: Register a new phone device to ensure it exists before decommissioning
@@ -59,6 +61,14 @@ public class DecommissionAutomationTest extends BaseApiTest {
             }
         """;
 
+        String userJson = """
+            {
+                "userId": 1,
+                "username": "Test User",
+                "employeeId": "235425"
+            }     
+        """;
+
         given()
             .contentType(ContentType.JSON)
             .body(phoneJson)
@@ -69,11 +79,23 @@ public class DecommissionAutomationTest extends BaseApiTest {
             .body("status", equalTo("AVAILABLE"))
             .body("deviceId", equalTo("TEST-PH-02"));
 
+
+        // Register a user to rent the device
+        given()
+            .basePath(basePathUser)
+            .contentType(ContentType.JSON)
+            .body(userJson)    
+        .when()
+            .post()
+        .then()
+            .statusCode(201);
+
         // Rent the device to set its status to IN_USE
         given()
             .pathParam("id", "TEST-PH-02")
+            .pathParam("userId", 1)
         .when()
-            .post("/{id}/rent")
+            .post("/{id}/rent/{userId}")
         .then()
             .statusCode(200)
             .body("status", equalTo("IN_USE"))

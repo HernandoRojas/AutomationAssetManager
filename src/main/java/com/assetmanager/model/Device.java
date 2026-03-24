@@ -8,6 +8,7 @@ import java.time.LocalDate;
 
 
 import com.assetmanager.exception.InvalidDeviceStateException;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
@@ -43,6 +44,11 @@ public abstract class Device {
     
     private String maintenanceReason;
     private LocalDate decommissionDate;
+
+    @ManyToOne
+    @JsonBackReference
+    @JoinColumn(name = "userId")
+    private User user;
 
     protected Device() {}
 
@@ -104,6 +110,7 @@ public abstract class Device {
             throw new InvalidDeviceStateException(this.deviceId, "return", this.status.name());
         } else {
             this.status = DeviceStatus.AVAILABLE;
+            this.user = null; // Clear the user association when returned
         }
     }
 
@@ -123,6 +130,7 @@ public abstract class Device {
         }
         this.status = DeviceStatus.AVAILABLE;
         this.maintenanceReason = null;
+        this.user = null; // Clear the user association when repaired and available again
     }
 
     public void decommission() {
@@ -143,5 +151,13 @@ public abstract class Device {
     @Override
     public String toString() {
         return String.format("[ID: %s | Brand: %s | Model: %s | Status: %s]", deviceId, brand, model, status);
+    }
+
+    public void setOwner(User user) {
+        this.user = user;
+    }
+
+    public User getOwner() {
+        return this.user;
     }
 }

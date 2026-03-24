@@ -6,18 +6,25 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import com.assetmanager.exception.DeviceNotFoundException;
+import com.assetmanager.exception.UserNotFoundException;
 import com.assetmanager.model.Device;
+import com.assetmanager.model.User;
 import com.assetmanager.model.DeviceStatus;
 import com.assetmanager.repository.DeviceRepository;
+import com.assetmanager.repository.UserRepository;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class AssetService {
     // We depend on the Interface, not the implementation
     private final DeviceRepository repository;
+    private final UserRepository userRepository;
 
     // Constructor Injection
-    public AssetService(DeviceRepository repository) {
+    public AssetService(DeviceRepository repository, UserRepository userRepository) {
         this.repository = repository;
+        this.userRepository = userRepository;
     }
 
     private Optional<Device> findDeviceById(String deviceId) {
@@ -48,6 +55,19 @@ public class AssetService {
         return repository.findAll();
     }
 
+    public List<User> findUserByEmployeeId(String employeeId) {
+        return userRepository.findByEmployeeIdIgnoreCase(employeeId);
+    }
+
+    public List<Device> findDevicesByUserId(String employeeId) {
+        if (employeeId != null && !employeeId.isBlank()) {
+            return findUserByEmployeeId(employeeId).stream()
+                    .flatMap(user -> repository.findByUser(user).stream())
+                    .toList();
+        }
+        return repository.findAll();
+    }
+
     public List<Device> getAllDevices() {
         return repository.findAll();
     }
@@ -68,15 +88,23 @@ public class AssetService {
         return repository.findByStatus(DeviceStatus.DECOMMISSIONED);
     }
 
-    public void rentDevice(String deviceId) {
-        // 1. Find the device
+    @Transactional
+    public void rentDevice(String deviceId, int userId) {
+        // 1. Find the user
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
+
+        // 2. Find the device
         Device device = getCreatedDevice(deviceId);
 
-        // 2. Business Logic: The "rent" method inside Device handles the status check and state transition
+        // 3. Business Logic: The "rent" method inside Device handles the status check and state transition
         device.rent();
 
-        // 3. Persist the change
+        // 4. Asign the device to the user
+        device.setOwner(user);
+
+        // 4. Persist the change
         repository.save(device);
+        userRepository.save(user);
         System.out.println("Device rented successfully: " + deviceId);
     }
 

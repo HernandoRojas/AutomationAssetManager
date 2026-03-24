@@ -9,10 +9,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.assetmanager.exception.DeviceNotFoundException;
 import com.assetmanager.exception.InvalidDeviceStateException;
+import com.assetmanager.exception.UserNotFoundException;
 import com.assetmanager.model.Device;
 import com.assetmanager.model.DeviceStatus;
 import com.assetmanager.model.MobilePhone;
+import com.assetmanager.model.User;
 import com.assetmanager.repository.DeviceRepository;
+import com.assetmanager.repository.UserRepository;
 import com.assetmanager.service.AssetService;
 
 import org.junit.jupiter.api.DisplayName;
@@ -32,6 +35,8 @@ class AssetServiceTest {
 
     @Mock
     private DeviceRepository repository; // The "stunt double"
+    @Mock
+    private UserRepository userRepository;
 
     @InjectMocks
     private AssetService assetService; // The "brain" with the mock inside
@@ -67,20 +72,26 @@ class AssetServiceTest {
         String deviceId = "M1";
         MobilePhone phone = new MobilePhone(deviceId, "Apple", "iPhone 15", "iOS", "+123");
         when(repository.findById(deviceId)).thenReturn(Optional.of(phone));
+        int userId = 1;
+        User user = new User(userId, "john_doe", "EMP123");
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
         // 2. ACT
-        assetService.rentDevice(deviceId);
+        assetService.rentDevice(deviceId, userId);
 
         // 3. ASSERT
         assertEquals(DeviceStatus.IN_USE, phone.getStatus());
+        assertEquals(userId, phone.getOwner().getUserId(), "Device should be assigned to the correct user");
 
         // 4. VERIFY
 
         // Verify Registration: Was save() called when we registered?
         verify(repository,times(1)).save(phone);
+        verify(userRepository,times(1)).save(user);
 
         // Verify Rental Flow: Did the service look for the device?
         verify(repository,times(1)).findById(deviceId);
+        verify(userRepository,times(1)).findById(userId);
     }
 
     @Test
@@ -88,6 +99,9 @@ class AssetServiceTest {
     void testRentNonExistentDevice() {
         // 1. ARRANGE
         String nonExistentId = "UNKNOWN-99";
+        int userId = 1;
+        User user = new User(userId, "john_doe", "EMP123");
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
         // Train the mock: When searching for this ID, return an empty Optional
         when(repository.findById(nonExistentId)).thenReturn(Optional.empty());
@@ -95,12 +109,13 @@ class AssetServiceTest {
         // 2. ACT & ASSERT
         // We verify the SERVICE logic: it should detect the empty optional and throw the custom exception
         assertThrows(DeviceNotFoundException.class, () -> {
-            assetService.rentDevice(nonExistentId);
+            assetService.rentDevice(nonExistentId, userId);
         });
 
         // 3. VERIFY (Interaction)
         // Ensure the service at least TRIED to look for it
         verify(repository).findById(nonExistentId);
+        verify(userRepository,times(1)).findById(userId);
     
         // Ensure the service NEVER tried to save anything (since it didn't find the device)
         verify(repository, never()).save(any(Device.class));
@@ -112,22 +127,27 @@ class AssetServiceTest {
         // 1. ARRANGE
         String deviceId = "M1";
         MobilePhone phone = new MobilePhone(deviceId, "Apple", "iPhone 15", "iOS", "+123");
+        int userId = 1;
+        User user = new User(userId, "john_doe", "EMP123");
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
     
         // Crucial step: We MANUALLY set the state to IN_USE to simulate the scenario
         // This replaces the need to call assetService.registerNewDevice() and assetService.rentDevice()
         phone.rent(); 
+        phone.setOwner(user); // Simulate that the device is already rented by this user
 
         // Train the mock to return the already rented phone
         when(repository.findById(deviceId)).thenReturn(Optional.of(phone));
 
         // 2. ACT & ASSERT
         assertThrows(InvalidDeviceStateException.class, () -> {
-            assetService.rentDevice(deviceId);
+            assetService.rentDevice(deviceId, userId);
         });
 
         // 3. VERIFY
         // Check that the service correctly consulted the repository
         verify(repository).findById(deviceId);
+        verify(userRepository).findById(userId);
     
         // IMPORTANT: Verify that save() was NEVER called a second time
         // because the logic should have failed before reaching the persistence step
@@ -141,26 +161,33 @@ class AssetServiceTest {
         // 1. ARRANGE
         String deviceId = "M1";
         MobilePhone phone = new MobilePhone(deviceId, "Apple", "iPhone 15", "iOS", "+123");
-
         when(repository.findById(deviceId)).thenReturn(Optional.of(phone));
 
+        int userId = 1;
+        User user = new User(userId, "john_doe", "EMP123");
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
         // 2.1 ACT
-        assetService.rentDevice(deviceId);
+        assetService.rentDevice(deviceId, userId);
 
         // 3.1 ASSERT after renting
         assertEquals(DeviceStatus.IN_USE, phone.getStatus());
+        assertEquals(user, phone.getOwner(),"Device should have the correct owner after renting");
 
         // 2.2 ACT - return the device
         assetService.returnDevice(deviceId);
 
         // 3.2 ASSERT after returning
         assertEquals(DeviceStatus.AVAILABLE, phone.getStatus());
+        assertNull(phone.getOwner(),"Device should NOT have an owner after renting");
 
         // 4. VERIFY
         verify(repository,times(2)).save(phone);
+        verify(userRepository,times(1)).save(user);
 
         // Verify Rental Flow: Did the service look for the device?
         verify(repository, times(2)).findById(deviceId);
+        verify(userRepository, times(1)).findById(userId);
     }
 
     @Test
@@ -268,11 +295,14 @@ class AssetServiceTest {
         // 1. ARRANGE
         String deviceId = "M1";
         MobilePhone phone = new MobilePhone(deviceId, "Apple", "iPhone 15", "iOS", "+123");
-
         when(repository.findById(deviceId)).thenReturn(Optional.of(phone));
 
+        int userId = 1;
+        User user = new User(userId, "john_doe", "EMP123");
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
         // 2.1 ACT - First, rent the device
-        assetService.rentDevice(deviceId);
+        assetService.rentDevice(deviceId, userId);
 
         // 3.1 ASSERT - after renting
         assertEquals(DeviceStatus.IN_USE, phone.getStatus(), "Device should be IN_USE after renting");
@@ -290,10 +320,13 @@ class AssetServiceTest {
         // 3.3 ASSERT - after completing repair
         assertEquals(DeviceStatus.AVAILABLE, phone.getStatus(), "Device should be AVAILABLE after repair");
         assertNull(phone.getMaintenanceReason(), "Maintenance reason should be cleared after repair");
+        assertNull(phone.getOwner(), "Device should NOT have an owner after repair");
 
         // 4. VERIFY
         verify(repository, times(3)).findById(deviceId);
         verify(repository, times(3)).save(phone); 
+        verify(userRepository, times(1)).findById(userId);
+        verify(userRepository, times(1)).save(user);
     }
 
     @Test
@@ -302,8 +335,11 @@ class AssetServiceTest {
         // 1. ARRANGE
         String deviceId1 = "M1";
         MobilePhone phone = new MobilePhone(deviceId1, "Apple", "iPhone 15", "iOS", "+123");
-
         when(repository.findById(deviceId1)).thenReturn(Optional.of(phone));
+
+        int userId = 1;
+        User user = new User(userId, "john_doe", "EMP123");
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
         // 2.1 ACT - Move device to maintenance
         assetService.moveDeviceToMaintenance(deviceId1, "Screen issue");
@@ -313,12 +349,13 @@ class AssetServiceTest {
 
         // 2.2 ACT & 3.2 ASSERT
         assertThrows(InvalidDeviceStateException.class, () -> {
-            assetService.rentDevice(deviceId1);
+            assetService.rentDevice(deviceId1, userId);
         });
 
         // 4. VERIFY
         verify(repository, times(2)).findById(deviceId1);
         verify(repository, times(1)).save(phone);
+        verify(userRepository, times(1)).findById(userId);
     }
 
     @Test
@@ -458,11 +495,15 @@ class AssetServiceTest {
         MobilePhone phone = new MobilePhone(deviceId, "Apple", "iPhone 15", "iOS", "+123");
         phone.decommission();
 
+        int userId = 1;
+        User user = new User(userId, "john_doe", "EMP123");
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
         when(repository.findById(deviceId)).thenReturn(Optional.of(phone));
 
         // 2. ACT & ASSERT
         assertThrows(InvalidDeviceStateException.class, () -> {
-            assetService.rentDevice(deviceId);
+            assetService.rentDevice(deviceId, userId);
         });
 
         // 3. VERIFY
@@ -510,5 +551,26 @@ class AssetServiceTest {
         // 4. VERIFY
         verify(repository, times(1)).findById(deviceId);
         verify(repository, times(1)).save(phone);
+    }
+
+    @Test
+    @DisplayName("Should throw UserNotFoundException when trying to rent a device with non-existent user")
+    void testRentDeviceWithNonExistentUser() {
+        // 1. ARRANGE
+        String deviceId = "M1";
+
+        int userId = 999; // Non-existent user ID
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        // 2. ACT & ASSERT
+        assertThrows(UserNotFoundException.class, () -> {
+            assetService.rentDevice(deviceId, userId);
+        });
+
+        // 3. VERIFY
+        verify(userRepository, times(1)).findById(userId);
+
+        verify(repository, never()).save(any(Device.class));
+        verify(userRepository, never()).save(any(User.class));
     }
 }

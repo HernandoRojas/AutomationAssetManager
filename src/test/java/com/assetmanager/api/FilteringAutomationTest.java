@@ -10,6 +10,9 @@ public class FilteringAutomationTest extends BaseApiTest {
     
     @Test
     public void shouldFilterDevicesByStatusAndBrand() {
+
+        String basePathUser = "/api/users";
+
         // 1. Arrange: Register multiple devices with different statuses and brands
 
         // Creating the first phone device (Apple, AVAILABLE)
@@ -24,6 +27,26 @@ public class FilteringAutomationTest extends BaseApiTest {
             }
         """;
 
+        String userJson = """
+            {
+                "userId": 1,
+                "username": "Test User",
+                "employeeId": "235425"
+             }     
+         """;
+
+        // Register a user to rent the device
+        given()
+            .basePath(basePathUser)
+            .contentType(ContentType.JSON)
+            .body(userJson)    
+        .when()
+            .post()
+        .then()
+            .statusCode(201);
+
+
+        // Creating the first phone device
         given()
             .contentType(ContentType.JSON)
             .body(phoneJson)
@@ -81,8 +104,9 @@ public class FilteringAutomationTest extends BaseApiTest {
         // Renting the second device to change its status to IN_USE
         given()
             .pathParam("id", "M002")
+            .pathParam("userId", 1)
         .when()
-            .post("/{id}/rent")
+            .post("/{id}/rent/{userId}")
         .then()
             .statusCode(200)
             .body("status", equalTo("IN_USE"))
