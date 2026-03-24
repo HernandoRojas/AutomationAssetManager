@@ -239,4 +239,40 @@ public class NegativeAutomationTest extends BaseApiTest {
             .body("error", equalTo("Validation Failed"))
             .body("message", containsString("deviceId: Device ID must be between 3 and 20 characters"));
     }
+
+    @Test
+    public void shouldReturnNotFoundForNonExistentUser() {
+        int nonExistentUserId = 9999;
+        String deviceId = "TEST-USER-01";
+
+        // First, register a new device
+        String newDeviceJson = """
+            {
+                "type": "laptop",
+                "deviceId": "%s",
+                "brand": "TestBrand",
+                "model": "TestModel",
+                "operatingSystem": "Windows 11",
+                "ramSizeGb": 16
+            }
+        """.formatted(deviceId);
+
+        given()
+            .contentType(ContentType.JSON)
+            .body(newDeviceJson)
+        .when()
+            .post()
+        .then()
+            .statusCode(201);
+
+        // Attempt to rent the device with a non-existent user ID
+        given()
+            .pathParam("id", deviceId)
+            .pathParam("userId", nonExistentUserId)
+        .when()
+            .post("/{id}/rent/{userId}")
+        .then()
+            .statusCode(404)
+            .body("error", equalTo("User Not Found"));
+    }
 }
