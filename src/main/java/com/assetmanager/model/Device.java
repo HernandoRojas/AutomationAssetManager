@@ -148,6 +148,14 @@ public abstract class Device {
         }
     }
 
+    public void transfer(User newOwner) {
+        ensuredNotDecommissioned(); // Cannot transfer if already decommissioned
+        if (this.status == DeviceStatus.UNDER_REPAIR) {
+            throw new InvalidDeviceStateException(this.deviceId, "transfer", this.status.name());
+        }
+        this.setOwner(newOwner);
+    }
+
     @Override
     public String toString() {
         return String.format("[ID: %s | Brand: %s | Model: %s | Status: %s]", deviceId, brand, model, status);
