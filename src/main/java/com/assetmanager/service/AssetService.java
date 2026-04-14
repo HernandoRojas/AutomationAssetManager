@@ -165,4 +165,33 @@ public class AssetService {
         userRepository.save(targetUser);
         System.out.println("Device transfered " + deviceId + " to: " + targetUser.getEmployeeId());
     }
+
+    @Transactional
+    public void registerDevicesBatch(List<Device> devices) {
+        // Validate all devices before saving any (all-or-nothing approach)
+        for (int i = 0; i < devices.size(); i++) {
+            Device device = devices.get(i);
+
+            // Validate device is not null
+            if (device == null) {
+                throw new IllegalArgumentException(
+                    "Batch processing failed at index " + i + ": Device cannot be null"
+                );
+            }
+            
+            // Check if device ID already exists
+            if (repository.existsById(device.getDeviceId())) {
+                throw new IllegalArgumentException(
+                    "Batch processing failed at index " + i + ": Device ID already exists: " + device.getDeviceId()
+                );
+            }
+        }
+        
+        // If all validations pass, save all devices
+        for (Device device : devices) {
+            repository.save(device);
+        }
+        
+        System.out.println("Batch processing completed successfully. " + devices.size() + " devices registered.");
+    }
 }
