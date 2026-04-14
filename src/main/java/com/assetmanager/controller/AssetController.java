@@ -89,5 +89,12 @@ public class AssetController {
         }
         return ResponseEntity.ok(devices);
     }
+
+    @PatchMapping("/{deviceId}/transfer/{targetEmployeeId}")
+    public ResponseEntity<Device> transferDevice(@PathVariable String deviceId, @PathVariable String targetEmployeeId) {
+        assetService.transferDevice(deviceId, targetEmployeeId);
+        Device transferredDevice = assetService.getCreatedDevice(deviceId);
+        return new ResponseEntity<>(transferredDevice, HttpStatus.OK);
+    }
     
 }

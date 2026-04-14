@@ -144,4 +144,25 @@ public class AssetService {
         repository.save(device);
         System.out.println("Device decommissioned: " + deviceId);
     }
+
+    @Transactional
+    public void transferDevice(String deviceId, String employeeId) {
+        // 1. Check that device exists
+        Device device = getCreatedDevice(deviceId);
+
+        // 2. Check that user exists
+        List<User> users = userRepository.findByEmployeeIdIgnoreCase(employeeId);
+        if (users.isEmpty()) {
+             throw new UserNotFoundException(0);
+        }
+        User targetUser = users.get(0);
+
+        // 3. Transfer the device to the new owner
+        device.transfer(targetUser);
+
+        // 4. Persist the changes
+        repository.save(device);
+        userRepository.save(targetUser);
+        System.out.println("Device transfered " + deviceId + " to: " + targetUser.getEmployeeId());
+    }
 }

@@ -573,4 +573,72 @@ class AssetServiceTest {
         verify(repository, never()).save(any(Device.class));
         verify(userRepository, never()).save(any(User.class));
     }
+
+    @Test
+    @DisplayName("Should sucessfully transfer a device from one user to another")
+    void testTransferDeviceBetweenUsers() {
+        // 1. ARRANGE
+        String deviceId = "M1";
+        MobilePhone phone = new MobilePhone(deviceId, "Apple", "iPhone 15", "iOS", "+123");
+        when(repository.findById(deviceId)).thenReturn(Optional.of(phone));
+
+        int userId1 = 1;
+        User user1 = new User(userId1, "john_doe", "EMP123");
+        when(userRepository.findById(userId1)).thenReturn(Optional.of(user1));
+
+        int userId2 = 2;
+        String employeeId2 = "EMP456";
+        User user2 = new User(userId2, "jane_smith", employeeId2);
+        when(userRepository.findByEmployeeIdIgnoreCase(employeeId2)).thenReturn(List.of(user2));
+
+        // First, rent the device to user1
+        assetService.rentDevice(deviceId, userId1);
+
+        // 2. ACT - Transfer the device from user1 to user2
+        assetService.transferDevice(deviceId, employeeId2);
+
+        // 3. ASSERT
+        assertEquals(user2, phone.getOwner(), "Device should be assigned to the new user after transfer");
+        assertEquals(phone.getStatus(), DeviceStatus.IN_USE, "Device status should remain IN_USE after failed transfer");
+
+        // 4. VERIFY
+        verify(repository, times(2)).findById(deviceId);
+        verify(repository, times(2)).save(phone);
+        verify(userRepository, times(1)).findById(userId1);
+        verify(userRepository, times(1)).findByEmployeeIdIgnoreCase(employeeId2);
+        verify(userRepository, times(1)).save(user1);
+        verify(userRepository, times(1)).save(user2);
+    }
+
+    @Test
+    @DisplayName("Should throw UserNotFoundException when trying to transfer a device to non-existent user")
+    void testTransferDeviceToNonExistentUser() {
+        // 1. ARRANGE
+        String deviceId = "M1";
+        MobilePhone phone = new MobilePhone(deviceId, "Apple", "iPhone 15", "iOS", "+123");
+        when(repository.findById(deviceId)).thenReturn(Optional.of(phone));
+
+        int userId1 = 1;
+        User user1 = new User(userId1, "john_doe", "EMP123");
+        when(userRepository.findById(userId1)).thenReturn(Optional.of(user1)); 
+
+        String nonExistentEmployeeId = "NON-EXISTENT-EMP";
+        when(userRepository.findByEmployeeIdIgnoreCase(nonExistentEmployeeId)).thenReturn(List.of());
+
+        // First, rent the device to user1
+        assetService.rentDevice(deviceId, userId1);
+
+        // 2. ACT & ASSERT
+        assertThrows(UserNotFoundException.class, () -> {
+            assetService.transferDevice(deviceId, nonExistentEmployeeId);
+        });
+        assertEquals(phone.getStatus(), DeviceStatus.IN_USE, "Device status should remain IN_USE after failed transfer");
+
+        // 3. VERIFY
+        verify(repository, times(2)).findById(deviceId);
+        verify(userRepository, times(1)).findById(userId1); 
+        verify(userRepository, times(1)).findByEmployeeIdIgnoreCase(nonExistentEmployeeId);
+        verify(userRepository, times(1)).save(user1);
+        verify(repository, times(1)).save(phone);
+    }
 }
