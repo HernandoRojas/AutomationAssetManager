@@ -12,6 +12,7 @@ import com.assetmanager.exception.InvalidDeviceStateException;
 import com.assetmanager.exception.UserNotFoundException;
 import com.assetmanager.model.Device;
 import com.assetmanager.model.DeviceStatus;
+import com.assetmanager.model.Laptop;
 import com.assetmanager.model.MobilePhone;
 import com.assetmanager.model.User;
 import com.assetmanager.repository.DeviceRepository;
@@ -27,6 +28,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -640,5 +642,79 @@ class AssetServiceTest {
         verify(userRepository, times(1)).findByEmployeeIdIgnoreCase(nonExistentEmployeeId);
         verify(userRepository, times(1)).save(user1);
         verify(repository, times(1)).save(phone);
+    }
+
+    @Test
+    @DisplayName("Should successfully register a batch of devices and list them correctly")
+    void testBatchRegisterDevices() {
+        // 1. ARRANGE
+        MobilePhone phone1 = new MobilePhone("M1", "Apple", "iPhone 15", "iOS", "+123");
+        MobilePhone phone2 = new MobilePhone("M2", "Samsung", "Galaxy S24", "Android", "+456");
+        MobilePhone phone3 = new MobilePhone("M3", "Google", "Pixel 8", "Android", "+789");
+        Laptop laptop1 = new Laptop("L1", "Dell", "XPS 13", "Windows", 16);
+        Laptop laptop2 = new Laptop("L2", "Apple", "MacBook Pro", "macOS", 16); 
+        Laptop laptop3 = new Laptop("L3", "Lenovo", "ThinkPad X1", "Windows", 16);
+
+        List<Device> devicesToRegister = List.of(phone1, phone2, phone3, laptop1, laptop2, laptop3);
+
+        // 2. ACT
+        assetService.registerDevicesBatch(devicesToRegister);
+
+        // 3. ASSERT
+        assertEquals(DeviceStatus.AVAILABLE, phone1.getStatus());
+        assertEquals(DeviceStatus.AVAILABLE, phone2.getStatus());
+        assertEquals(DeviceStatus.AVAILABLE, phone3.getStatus());
+        assertEquals(DeviceStatus.AVAILABLE, laptop1.getStatus());
+        assertEquals(DeviceStatus.AVAILABLE, laptop2.getStatus());
+        assertEquals(DeviceStatus.AVAILABLE, laptop3.getStatus());
+
+        // 4. VERIFY
+        verify(repository, times(1)).save(phone1);
+        verify(repository, times(1)).save(phone2);
+        verify(repository, times(1)).save(phone3);
+        verify(repository, times(1)).save(laptop1);
+        verify(repository, times(1)).save(laptop2);
+        verify(repository, times(1)).save(laptop3);
+    }
+
+    @Test
+    @DisplayName("Should throw IllegalArgumentException when trying to register a batch with Device that already exists")
+    void testBatchRegisterDevicesWithDuplicateIds() {
+        // 1. ARRANGE
+        MobilePhone phone1 = new MobilePhone("M1", "Apple", "iPhone 15", "iOS", "+123");
+        MobilePhone phone2 = new MobilePhone("M2", "Samsung", "Galaxy S24", "Android", "+456");
+        
+        when(repository.existsById("M1")).thenReturn(true); // Simulate that M1 already exists
+
+        List<Device> devicesToRegister = List.of(phone1, phone2);
+
+        // 2. ACT & ASSERT
+        assertThrows(IllegalArgumentException.class, () -> {
+            assetService.registerDevicesBatch(devicesToRegister);
+        });
+
+        // 3. VERIFY
+        verify(repository, times(1)).existsById("M1");
+        verify(repository, never()).save(any(Device.class));
+    }
+
+    @Test
+    @DisplayName("Should throw IllegalArgumentException when trying to register a batch with null device")
+    void testBatchRegisterDevicesWithNullDevice() {
+        // 1. ARRANGE
+        MobilePhone phone1 = new MobilePhone("M1", "Apple", "iPhone 15", "iOS", "+123");
+        MobilePhone phone2 = null; // Null device
+
+        List<Device> devicesToRegister = new ArrayList<>();
+        devicesToRegister.add(phone1);
+        devicesToRegister.add(phone2);
+
+        // 2. ACT & ASSERT
+        assertThrows(IllegalArgumentException.class, () -> {
+            assetService.registerDevicesBatch(devicesToRegister);
+        });
+
+        // 3. VERIFY
+        verify(repository, never()).save(any(Device.class));
     }
 }
