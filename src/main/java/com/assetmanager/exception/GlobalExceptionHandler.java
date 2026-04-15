@@ -69,22 +69,43 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationErrors(MethodArgumentNotValidException ex, HttpServletRequest request) {
-    // 1. Extract the specific validation failures
-        String errors = ex.getBindingResult()
+        // Extract field errors - includes nested object errors for list items
+        String fieldErrors = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
-                .map(f -> f.getField() + ": " + f.getDefaultMessage())
-                .collect(Collectors.joining(", "));
+                .map(f -> {
+                    String field = f.getField();
+                    String message = f.getDefaultMessage();
+                    
+                    // Extract array index from field path (e.g., "devices[0].deviceId" -> "Index 0")
+                    if (field.contains("[")) {
+                        String indexStr = field.substring(field.indexOf("[") + 1, field.indexOf("]"));
+                        String fieldName = field.substring(field.indexOf(".") + 1);
+                        return "Array index " + indexStr + " → " + fieldName + ": " + message;
+                    }
+                    return field + ": " + message;
+                })
+                .collect(Collectors.joining("; "));
 
-    // 2. Map them to your existing ErrorResponse DTO
+        // Extract global errors (if any)
+        String globalErrors = ex.getBindingResult()
+                .getGlobalErrors()
+                .stream()
+                .map(g -> g.getDefaultMessage())
+                .collect(Collectors.joining("; "));
+
+        // Combine both field and global errors
+        String allErrors = (fieldErrors.isEmpty() ? "" : fieldErrors) +
+                          (globalErrors.isEmpty() ? "" : (fieldErrors.isEmpty() ? globalErrors : "; " + globalErrors));
+
         ErrorResponse error = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
                 "Validation Failed",
-                errors,
+                allErrors.isEmpty() ? "Invalid request payload" : allErrors,
                 request.getRequestURI()
         );
 
-    return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(UserNotFoundException.class)

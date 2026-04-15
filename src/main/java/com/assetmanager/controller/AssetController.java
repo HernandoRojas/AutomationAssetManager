@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.assetmanager.dto.BatchDeviceRequest;
 import com.assetmanager.model.Device;
 import com.assetmanager.model.DeviceStatus;
 import com.assetmanager.service.AssetService;
@@ -96,5 +97,13 @@ public class AssetController {
         Device transferredDevice = assetService.getCreatedDevice(deviceId);
         return new ResponseEntity<>(transferredDevice, HttpStatus.OK);
     }
-    
+
+    @PostMapping("/batch")
+    public ResponseEntity<Map<String, Object>> registerDevicesBatch(@Valid @RequestBody BatchDeviceRequest request) {
+        assetService.registerDevicesBatch(request.getDevices());
+        Map<String, Object> response = new java.util.HashMap<>();
+        response.put("message", "Batch registration completed successfully");
+        response.put("devicesRegistered", request.getDevices().size());
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
 }
